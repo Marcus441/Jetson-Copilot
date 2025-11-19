@@ -22,24 +22,20 @@
         };
         nix2containerPkgs = nix2container.packages.${system};
         pkgsArm = pkgs.pkgsCross.aarch64-multiplatform;
-        python = pkgs.python313;
+        pythonPkgsArm = pkgsArm.python313Packages;
         pythonPkgs = pkgs.python313Packages;
       in {
         devShells.default = pkgs.mkShell {
           name = "jetson-python";
 
-          packages = [
+          packages = with pythonPkgs; [
+            fastapi
+            llama-cpp-python
             python
-            pythonPkgs.pip
-            pythonPkgs.setuptools
-            pythonPkgs.wheel
-
-            pythonPkgs.numpy
-            pythonPkgs.opencv4
-            pythonPkgs.pyyaml
-
-            pkgs.cmake
-            pkgs.pkg-config
+            requests
+            torch
+            transformers
+            uvicorn
           ];
 
           shellHook = ''
@@ -53,17 +49,28 @@
           '';
         };
 
-        packages.arm64.app = pkgsArm.python311Packages.buildPythonApplication {
+        packages.arm64.app = pythonPkgsArm.buildPythonApplication {
           pname = "jetson-python-app";
           version = "0.1.0";
           src = ./.;
 
           format = "pyproject";
 
-          propagatedBuildInputs = with pkgsArm.python311Packages; [
+          nativeBuildInputs = with pythonPkgsArm; [
+            setuptools
+            wheel
+            pyproject-hooks
+          ];
+
+          propagatedBuildInputs = with pythonPkgsArm; [
+            python
+            python-dotenv
+            fastapi
+            llama-cpp-python
             numpy
-            opencv4
-            pyyaml
+            requests
+            transformers
+            uvicorn
           ];
         };
 
