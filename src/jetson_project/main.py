@@ -1,12 +1,13 @@
 # main.py
+from .model_handler import ModelHandler
 
-import sys
+# Initialize the ModelHandler
+handler = ModelHandler()
+handler.load_model()
 
+prompt = "write a quick sort algorithm."
 
-def main():
-    print("Jetson Python App starting...")
-    return 0
+# Generate completion using the ModelHandler
+response = handler.generate_completion(prompt, max_new_tokens=512)
 
-
-if __name__ == "__main__":
-    sys.exit(main())
+print(response)
