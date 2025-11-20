@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from .completion_service import CompletionService
 import logging
+import uvicorn
 
 logger = logging.getLogger(__name__)
 
@@ -58,4 +59,9 @@ async def health_check():
     Health check endpoint to verify the service is running.
     """
     return {"status": "ok", "model_loaded": completion_service.model_handler.model is not None}
+
+def start():
+    """Entry point for the application script."""
+    uvicorn.run("jetson_project.api:app", host="0.0.0.0", port=8000, reload=False)
+
 
