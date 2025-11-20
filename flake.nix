@@ -4,14 +4,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    nix2container.url = "github:nlewo/nix2container";
   };
 
   outputs = {
-    self,
     nixpkgs,
     flake-utils,
-    nix2container,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (
@@ -20,9 +17,6 @@
           inherit system;
           config.allowUnfree = true;
         };
-        nix2containerPkgs = nix2container.packages.${system};
-        pkgsArm = pkgs.pkgsCross.aarch64-multiplatform;
-        pythonPkgsArm = pkgsArm.python313Packages;
         pythonPkgs = pkgs.python313Packages;
       in {
         devShells.default = pkgs.mkShell {
@@ -40,7 +34,7 @@
 
           shellHook = ''
             echo "╔═══════════════════════════════════════╗"
-            echo "║    Jetson Python Development Shell    ║"
+            echo "║    Jetson Python Development Shell    ║"
             echo "╚═══════════════════════════════════════╝"
             echo -n " Python: "
             python3 --version
@@ -48,54 +42,6 @@
             uname -m
           '';
         };
-
-        packages.arm64.app = pythonPkgsArm.buildPythonApplication {
-          pname = "jetson-python-app";
-          version = "0.1.0";
-          src = ./.;
-
-          format = "pyproject";
-
-          nativeBuildInputs = with pythonPkgsArm; [
-            setuptools
-            wheel
-            pyproject-hooks
-          ];
-
-          propagatedBuildInputs = with pythonPkgsArm; [
-            python
-            python-dotenv
-            fastapi
-            llama-cpp-python
-            numpy
-            requests
-            transformers
-            uvicorn
-          ];
-        };
-
-        packages.container = let
-          l4t-base = nix2containerPkgs.nix2container.pullImage {
-            imageName = "nvcr.io/nvidia/l4t-base";
-            imageDigest = "sha256:4646e1dd2f26e8de5f2f8776bb02a403bef0148fd7e4d860f836bb858fc5b1cd";
-            sha256 = "sha256-snLOWzQsQKS67AfO94j/Cpstr1qVxCvRMQPgMf6SikY=";
-            arch = "aarch64-linux";
-          };
-        in
-          nix2containerPkgs.nix2container.buildImage {
-            name = "jetson-python-container";
-
-            fromImage = l4t-base;
-
-            copyToRoot = [
-              self.packages.${system}.arm64.app
-            ];
-
-            config = {
-              WorkingDir = "/app";
-              Cmd = ["/app/bin/jetson-python-app"];
-            };
-          };
       }
     );
 }
