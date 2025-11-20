@@ -15,9 +15,8 @@ dependencies = [
     "uvicorn[standard]",
     "python-dotenv",
     "requests",
-    "torch",
-    "torch"
+    "accelerate"
 ]
 
 [project.scripts]
-start = "jetson_project.api:app"
+start = "jetson_project.api:start"
