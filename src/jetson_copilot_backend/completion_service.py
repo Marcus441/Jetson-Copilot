@@ -30,6 +30,16 @@ class CompletionService:
             logger.error(f"Error generating completion: {e}")
             raise
 
+    def get_chat_completion(self, messages, max_tokens=512, temperature=0.7):
+        logger.info(f"Generating chat completion for {len(messages)} messages...")
+        try:
+            completion = self.model_handler.create_chat_completion(messages, max_tokens, temperature)
+            logger.info("Chat completion generated successfully.")
+            return completion
+        except Exception as e:
+            logger.error(f"Error generating chat completion: {e}")
+            raise
+
 if __name__ == '__main__':
     # Example usage
     logging.basicConfig(level=logging.INFO)

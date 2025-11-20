@@ -45,6 +45,16 @@ class ModelHandler:
 
         return response['choices'][0]['message']['content']
 
+    def create_chat_completion(self, messages, max_tokens=512, temperature=0.7):
+        if not self.model:
+            raise ValueError("Model not loaded. Call load_model() first.")
+
+        return self.model.create_chat_completion(
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+
 if __name__ == "__main__":
     # Example usage
     logging.basicConfig(level=logging.INFO)

@@ -1,6 +1,7 @@
 # src/jetson_copilot_backend/api.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from typing import List, Dict, Optional, Any
 from .completion_service import CompletionService
 import logging
 import uvicorn
@@ -36,6 +37,17 @@ class CompletionRequest(BaseModel):
 class CompletionResponse(BaseModel):
     completion: str
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
+    model: Optional[str] = None
+    max_tokens: Optional[int] = 512
+    temperature: Optional[float] = 0.7
+    stream: Optional[bool] = False
+
 @app.post("/complete", response_model=CompletionResponse)
 async def complete_code(request: CompletionRequest):
     """
@@ -52,6 +64,28 @@ async def complete_code(request: CompletionRequest):
     except Exception as e:
         logger.error(f"Error generating completion: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to generate completion: {e}")
+
+@app.post("/api/chat")
+async def chat_completion(request: ChatRequest):
+    """
+    Generates chat completion compatible with OpenAI/Ollama style.
+    """
+    logger.info(f"Received chat completion request for {len(request.messages)} messages.")
+    try:
+        # Convert Pydantic models to dicts
+        messages = [msg.dict() for msg in request.messages]
+
+        completion = completion_service.get_chat_completion(
+            messages,
+            request.max_tokens,
+            request.temperature
+        )
+        logger.info("Successfully generated chat completion.")
+        # Return the raw response from llama-cpp-python which is already in OpenAI format
+        return completion
+    except Exception as e:
+        logger.error(f"Error generating chat completion: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to generate chat completion: {e}")
 
 @app.get("/health")
 async def health_check():
