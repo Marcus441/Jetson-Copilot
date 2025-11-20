@@ -1,15 +1,14 @@
 import logging
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
-# src/jetson_project/completion_service.py
 from .model_handler import ModelHandler
 
+logger = logging.getLogger(__name__)
+
 class CompletionService:
-    def __init__(self, model_name="Qwen/Qwen2.5-Coder-1.5B-Instruct", device="cuda"):
-        self.model_handler = ModelHandler(model_name, device)
+    def __init__(self, model_name="Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF", model_file="*q8_0.gguf", device="cuda"):
+        # Map device to n_gpu_layers
+        # -1 means all layers on GPU, 0 means all on CPU
+        n_gpu_layers = -1 if device == "cuda" else 0
+        self.model_handler = ModelHandler(model_name=model_name, model_file=model_file, n_gpu_layers=n_gpu_layers)
         logger.info(f"CompletionService initialized with model: {model_name} on device: {device}")
 
     def load_model(self):
@@ -33,6 +32,7 @@ class CompletionService:
 
 if __name__ == '__main__':
     # Example usage
+    logging.basicConfig(level=logging.INFO)
     # Consider using "cpu" for initial testing if a GPU is not readily available or for debugging purposes
     # For Jetson Orin Nano, you would typically use "cuda" after optimization
     service = CompletionService(device="cpu")

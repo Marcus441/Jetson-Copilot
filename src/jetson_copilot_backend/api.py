@@ -1,4 +1,4 @@
-# src/jetson_project/api.py
+# src/jetson_copilot_backend/api.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from .completion_service import CompletionService
@@ -62,6 +62,5 @@ async def health_check():
 
 def start():
     """Entry point for the application script."""
-    uvicorn.run("jetson_project.api:app", host="0.0.0.0", port=8000, reload=False)
-
+    uvicorn.run("jetson_copilot_backend.api:app", host="0.0.0.0", port=8000, reload=False)
 
