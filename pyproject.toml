@@ -15,6 +15,7 @@ dependencies = [
     "uvicorn[standard]",
     "python-dotenv",
     "requests",
+    "transformers",
     "accelerate"
 ]
 
