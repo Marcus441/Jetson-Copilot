@@ -19,8 +19,9 @@ dependencies = [
 ]
 
 [project.scripts]
-start = "jetson_project.api:start"
+start = "jetson_copilot_backend.api:start"
+
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["jetson_copilot_backend"] # Explicitly list the package to include
+packages = ["jetson_copilot_backend"]
