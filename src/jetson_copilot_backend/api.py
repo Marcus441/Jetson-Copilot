@@ -81,6 +81,19 @@ class OllamaGenerateResponse(BaseModel):
     eval_duration: Optional[int] = 0
 
 
+class OllamaChatResponse(BaseModel):
+    model: str
+    created_at: str
+    message: ChatMessage
+    done: bool
+    total_duration: Optional[int] = 0
+    load_duration: Optional[int] = 0
+    prompt_eval_count: Optional[int] = 0
+    prompt_eval_duration: Optional[int] = 0
+    eval_count: Optional[int] = 0
+    eval_duration: Optional[int] = 0
+
+
 @app.post("/complete", response_model=CompletionResponse)
 async def complete_code(request: CompletionRequest):
     """
@@ -102,10 +115,10 @@ async def complete_code(request: CompletionRequest):
         )
 
 
-@app.post("/api/chat")
+@app.post("/api/chat", response_model=OllamaChatResponse)
 async def chat_completion(request: ChatRequest):
     """
-    Generates chat completion compatible with OpenAI/Ollama style.
+    Generates chat completion compatible with Ollama style.
     """
     logger.info(
         f"Received chat completion request for {len(request.messages)} messages."
@@ -114,12 +127,28 @@ async def chat_completion(request: ChatRequest):
         # Convert Pydantic models to dicts
         messages = [msg.dict() for msg in request.messages]
 
-        completion = completion_service.get_chat_completion(
+        completion_data = completion_service.get_chat_completion(
             messages, request.max_tokens, request.temperature
         )
+
+        # Map OpenAI format to Ollama format
+        message_content = completion_data["choices"][0]["message"]
+
+        response = OllamaChatResponse(
+            model=request.model or "unknown",
+            created_at=datetime.now(timezone.utc).isoformat(),
+            message=ChatMessage(role=message_content["role"], content=message_content["content"]),
+            done=True,
+            total_duration=0,
+            load_duration=0,
+            prompt_eval_count=completion_data.get("usage", {}).get("prompt_tokens", 0),
+            prompt_eval_duration=0,
+            eval_count=completion_data.get("usage", {}).get("completion_tokens", 0),
+            eval_duration=0
+        )
+
         logger.info("Successfully generated chat completion.")
-        # Return the raw response from llama-cpp-python which is already in OpenAI format
-        return completion
+        return response
     except Exception as e:
         logger.error(f"Error generating chat completion: {e}", exc_info=True)
         raise HTTPException(
