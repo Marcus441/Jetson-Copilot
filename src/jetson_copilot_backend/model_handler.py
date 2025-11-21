@@ -3,8 +3,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class ModelHandler:
-    def __init__(self, model_name="Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF", model_file="*q8_0.gguf", n_gpu_layers=-1):
+    def __init__(
+        self,
+        model_name="Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF",
+        model_file="*q8_0.gguf",
+        n_gpu_layers=-1,
+    ):
         self.model_name = model_name
         self.model_file = model_file
         self.n_gpu_layers = n_gpu_layers
@@ -17,8 +23,8 @@ class ModelHandler:
                 repo_id=self.model_name,
                 filename=self.model_file,
                 n_gpu_layers=self.n_gpu_layers,
-                n_ctx=4096, # Adjust context window as needed
-                verbose=True
+                n_ctx=10000,  # Adjust context window as needed
+                verbose=True,
             )
             logger.info("Model loaded successfully.")
         except Exception as e:
@@ -43,7 +49,7 @@ class ModelHandler:
             temperature=0.1,
         )
 
-        return response['choices'][0]['message']['content']
+        return response["choices"][0]["message"]["content"]
 
     def create_chat_completion(self, messages, max_tokens=512, temperature=0.7):
         if not self.model:
@@ -54,6 +60,18 @@ class ModelHandler:
             max_tokens=max_tokens,
             temperature=temperature,
         )
+
+    def create_completion(self, prompt, max_tokens=512, temperature=0.7, stop=None):
+        if not self.model:
+            raise ValueError("Model not loaded. Call load_model() first.")
+
+        return self.model.create_completion(
+            prompt=prompt,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            stop=stop
+        )
+
 
 if __name__ == "__main__":
     # Example usage

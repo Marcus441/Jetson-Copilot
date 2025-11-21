@@ -40,6 +40,16 @@ class CompletionService:
             logger.error(f"Error generating chat completion: {e}")
             raise
 
+    def get_ollama_completion(self, prompt, max_tokens=512, temperature=0.7, stop=None):
+        logger.info(f"Generating Ollama completion for prompt (truncated): {prompt[:50]}...")
+        try:
+            completion = self.model_handler.create_completion(prompt, max_tokens, temperature, stop)
+            logger.info("Ollama completion generated successfully.")
+            return completion
+        except Exception as e:
+            logger.error(f"Error generating Ollama completion: {e}")
+            raise
+
 if __name__ == '__main__':
     # Example usage
     logging.basicConfig(level=logging.INFO)
