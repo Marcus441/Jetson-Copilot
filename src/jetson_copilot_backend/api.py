@@ -53,6 +53,9 @@ class ChatRequest(BaseModel):
     max_tokens: Optional[int] = 512
     temperature: Optional[float] = 0.7
     stream: Optional[bool] = False
+    format: Optional[str] = None
+    options: Optional[Dict[str, Any]] = None
+    keep_alive: Optional[str] = None
 
 
 class OllamaGenerateRequest(BaseModel):
@@ -127,8 +130,14 @@ async def chat_completion(request: ChatRequest):
         # Convert Pydantic models to dicts
         messages = [msg.dict() for msg in request.messages]
 
+        # Extract options
+        options = request.options or {}
+        # Check options for parameters, fallback to top-level, then default
+        max_tokens = options.get("num_predict", request.max_tokens or 512)
+        temperature = options.get("temperature", request.temperature or 0.7)
+
         completion_data = completion_service.get_chat_completion(
-            messages, request.max_tokens, request.temperature
+            messages, max_tokens, temperature
         )
 
         # Map OpenAI format to Ollama format
@@ -137,14 +146,16 @@ async def chat_completion(request: ChatRequest):
         response = OllamaChatResponse(
             model=request.model or "unknown",
             created_at=datetime.now(timezone.utc).isoformat(),
-            message=ChatMessage(role=message_content["role"], content=message_content["content"]),
+            message=ChatMessage(
+                role=message_content["role"], content=message_content["content"]
+            ),
             done=True,
             total_duration=0,
             load_duration=0,
             prompt_eval_count=completion_data.get("usage", {}).get("prompt_tokens", 0),
             prompt_eval_duration=0,
             eval_count=completion_data.get("usage", {}).get("completion_tokens", 0),
-            eval_duration=0
+            eval_duration=0,
         )
 
         logger.info("Successfully generated chat completion.")
@@ -191,13 +202,13 @@ async def generate_completion(request: OllamaGenerateRequest):
             created_at=datetime.now(timezone.utc).isoformat(),
             response=text_response,
             done=True,
-            context=[], # Context management is complex, skipping for now
+            context=[],  # Context management is complex, skipping for now
             total_duration=0,
             load_duration=0,
             prompt_eval_count=completion_data.get("usage", {}).get("prompt_tokens", 0),
             prompt_eval_duration=0,
             eval_count=completion_data.get("usage", {}).get("completion_tokens", 0),
-            eval_duration=0
+            eval_duration=0,
         )
 
         logger.info("Successfully generated Ollama completion.")
