@@ -20,22 +20,22 @@ dependencies = [
 ]
 
 [project.scripts]
-start = "jetson-copilot.api:start"
+start = "jetson_copilot.api:start"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["jetson-copilot"]
+packages = ["jetson_copilot"]
 
 [tool.poetry]
 name = "jetson-copilot"
 version = "0.1.0"
 description = "Python backend for Jetson Orin Nano code completion with RAG support"
 authors = []
-license = "GPLv3" # Example
+license = "GPLv3" 
 readme = "README.md"
 
 packages = [
-    { include = "jetson-copilot", from = "src" },
+    { include = "jetson_copilot", from = "src" },
 ]
 
 [tool.pyright]
