@@ -24,6 +24,7 @@
 
           packages = with pythonPkgs; [
             fastapi
+            pkgs.poetry
             llama-cpp-python
             python
             requests
