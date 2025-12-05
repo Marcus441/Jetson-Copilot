@@ -10,13 +10,14 @@ readme = "README.md"
 requires-python = ">=3.10"
 
 dependencies = [
-    "llama-cpp-python",
+    "accelerate",
     "fastapi",
-    "uvicorn[standard]",
+    "huggingface_hub",
+    "llama-cpp-python",
     "python-dotenv",
     "requests",
     "transformers",
-    "accelerate"
+    "uvicorn[standard]",
 ]
 
 [project.scripts]
@@ -38,9 +39,12 @@ packages = [
     { include = "jetson_copilot", from = "src" },
 ]
 
-[tool.pyright]
+[tool.basedpyright]
+include = ["src"]
 venvPath = "."
 venv = ".venv"
-exclude = [".venv"]
-typeCheckingMode = "basic"
+executionEnvironments = [
+    { root = "src" }
+]
+
 
