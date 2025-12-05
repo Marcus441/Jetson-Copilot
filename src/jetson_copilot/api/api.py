@@ -1,24 +1,31 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, status
+from typing import Annotated
+from fastapi import Depends, FastAPI, HTTPException, status
 import logging
 
-from .llm_handler import ensure_model_exists, load_model, model_loaded, unload_model
-from .models import ChatRequest
+from llm.llm_engine import LLMEngine
+from data_models.models import ChatRequest
 import uvicorn
 
 logging.basicConfig(level=logging.INFO)
 
+engine = LLMEngine()
+
+
+def get_engine() -> LLMEngine:
+    return engine
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # pyright: ignore[reportUnusedParameter]
-    if ensure_model_exists():
+    if engine.ensure_model_exists():
         try:
-            load_model()
+            engine.load_model()
         except Exception as e:
             logging.critical(f"Fatal Error: Failed to initialize LLama engine: {e}")
             raise e
     yield
-    unload_model()
+    engine.unload_model()
     logging.info("FastAPI server shutdown complete.")
 
 
@@ -26,8 +33,8 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
-def check_health():
-    if not model_loaded:
+def check_health(engine: Annotated[LLMEngine, Depends(get_engine)]):
+    if not engine.loaded:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="LLM model is not loaded or initialized",
