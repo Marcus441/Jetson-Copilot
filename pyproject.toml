@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.scripts]
-start = "jetson_copilot.api:start"
+start = "jetson_copilot.main:start"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

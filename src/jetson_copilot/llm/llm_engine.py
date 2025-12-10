@@ -10,10 +10,18 @@ logging.basicConfig(level=logging.INFO)
 
 
 class LLMEngine:
-    model: Llama | None
+    model: Llama
+    loaded: bool
 
     def __init__(self) -> None:
-        self.model = None
+        if self.ensure_model_exists():
+            try:
+                self.model = Llama(model_path=str(MODEL_PATH), verbose=False)
+                self.loaded = True
+            except Exception as e:
+                logging.critical(f"Fatal Error: Failed to initialize LLama engine: {e}")
+                self.loaded = False
+                raise e
 
     @staticmethod
     def ensure_model_exists() -> bool:
@@ -31,16 +39,6 @@ class LLMEngine:
         except Exception as e:
             logging.info(f"Error downloading model from hugging face: {e}")
             return False
-
-    def load_model(self) -> None:
-        try:
-            self.model = Llama(model_path=str(MODEL_PATH), verbose=False)
-        except Exception as e:
-            raise e
-
-    @property
-    def loaded(self) -> bool:
-        return self.model is not None
 
     def unload_model(self) -> None:
         del self.model
