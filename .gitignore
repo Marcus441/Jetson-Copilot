@@ -31,6 +31,9 @@ dist/
 # Jetson / CUDA / TensorRT / Deep Learning
 # -------------------------------------------
 
+# Model files
+models/
+
 # TensorRT engine files (HUGE binary blobs)
 *.engine
 *.plan

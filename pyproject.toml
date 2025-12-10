@@ -3,26 +3,48 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "jetson-copilot-backend"
+name = "jetson-copilot"
 version = "0.1.0"
 description = "Python backend for Jetson Orin Nano code completion with RAG support"
 readme = "README.md"
 requires-python = ">=3.10"
 
 dependencies = [
-    "llama-cpp-python",
+    "accelerate",
     "fastapi",
-    "uvicorn[standard]",
+    "huggingface_hub",
+    "llama-cpp-python",
     "python-dotenv",
     "requests",
     "transformers",
-    "accelerate"
+    "uvicorn[standard]",
 ]
 
 [project.scripts]
-start = "jetson_copilot_backend.api:start"
-
+start = "jetson_copilot.api:start"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["jetson_copilot_backend"]
+packages = ["jetson_copilot"]
+
+[tool.poetry]
+name = "jetson-copilot"
+version = "0.1.0"
+description = "Python backend for Jetson Orin Nano code completion with RAG support"
+authors = []
+license = "GPLv3" 
+readme = "README.md"
+
+packages = [
+    { include = "jetson_copilot", from = "src" },
+]
+
+[tool.basedpyright]
+include = ["src"]
+venvPath = "."
+venv = ".venv"
+executionEnvironments = [
+    { root = "src" }
+]
+
+
