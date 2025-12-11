@@ -1,20 +1,54 @@
-from llama_cpp import ChatCompletionRequestMessage
+from collections.abc import Iterator
+from typing import cast
+from llama_cpp import (
+    ChatCompletionRequestMessage,
+    CreateChatCompletionResponse,
+    CreateChatCompletionStreamResponse,
+)
 from jetson_copilot.llm.llm_engine import LLMEngine
 from jetson_copilot.llm.schemas import ModelOptions
 
 
-def CreateCompletion(
-    keep_alive: str,
+def stream_completion_safe(
+    iterator: Iterator[CreateChatCompletionStreamResponse],
+) -> Iterator[bytes]:
+    for chunk in iterator:
+        content = chunk.get("choices", [{}])[0].get("delta", {}).get("content")
+        if content:
+            yield content.encode("utf-8")
+
+
+def create_completion(
     messages: list[ChatCompletionRequestMessage],
     options: ModelOptions,
-    stream: bool,
     model: str,
     engine: LLMEngine,
-):
-    response = engine.model.create_chat_completion(
-        messages,
-        temperature=options.temperature,
-        stream=stream,
-        model=model,
+) -> CreateChatCompletionResponse:
+    """Non-streaming chat completion"""
+    return cast(
+        CreateChatCompletionResponse,
+        engine.model.create_chat_completion(
+            messages,
+            temperature=options.temperature,
+            stream=False,  # always non-streaming
+            model=model,
+        ),
     )
-    return response
+
+
+def create_streamed_completion(
+    messages: list[ChatCompletionRequestMessage],
+    options: ModelOptions,
+    model: str,
+    engine: LLMEngine,
+) -> Iterator[CreateChatCompletionStreamResponse]:
+    """Streaming chat completion"""
+    return cast(
+        Iterator[CreateChatCompletionStreamResponse],
+        engine.model.create_chat_completion(
+            messages,
+            temperature=options.temperature,
+            stream=True,
+            model=model,
+        ),
+    )
