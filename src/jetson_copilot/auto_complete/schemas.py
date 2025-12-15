@@ -18,6 +18,12 @@ class ChatRequest(BaseModel):
     )
 
 
+class StreamedChatResponse(BaseModel):
+    id: str = Field(default="chatcmpl-00001")  # Fake OpenAI-style ID
+    model: str
+    content: str
+
+
 class ChatResponse(BaseModel):
     id: str = Field(default="chatcmpl-00001")  # Fake OpenAI-style ID
     model: str

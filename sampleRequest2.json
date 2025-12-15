@@ -1,0 +1,14 @@
+{
+    "model": "qwen2.5-Coder-1.5b-instruct-GGUF",
+    "messages": [
+        {
+            "role": "user",
+            "content": "Explain the difference between a Jetson Orin Nano and a Jetson Orin NX in one paragraph."
+        }
+    ],
+    "stream": true,
+    "options": {
+        "temperature": 0.8,
+        "num_predict": 128
+    }
+}

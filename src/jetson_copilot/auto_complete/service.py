@@ -30,6 +30,7 @@ def create_completion(
         engine.model.create_chat_completion(
             messages,
             temperature=options.temperature,
+            max_tokens=options.num_ctx,
             stream=False,  # always non-streaming
             model=model,
         ),
@@ -48,6 +49,7 @@ def create_streamed_completion(
         engine.model.create_chat_completion(
             messages,
             temperature=options.temperature,
+            max_tokens=options.num_ctx,
             stream=True,
             model=model,
         ),

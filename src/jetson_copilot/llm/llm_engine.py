@@ -1,6 +1,4 @@
-from huggingface_hub import (
-    hf_hub_download,  # pyright: ignore[reportUnknownVariableType]
-)
+from huggingface_hub import hf_hub_download  # pyright: ignore[reportUnknownVariableType]
 from llama_cpp import Llama
 import logging
 
@@ -16,7 +14,12 @@ class LLMEngine:
     def __init__(self) -> None:
         if self.ensure_model_exists():
             try:
-                self.model = Llama(model_path=str(MODEL_PATH), verbose=False)
+                self.model = Llama(
+                    model_path=str(MODEL_PATH),
+                    verbose=True,
+                    n_ctx=4096,
+                    n_gpu_layers=-1,
+                )
                 self.loaded = True
             except Exception as e:
                 logging.critical(f"Fatal Error: Failed to initialize LLama engine: {e}")
