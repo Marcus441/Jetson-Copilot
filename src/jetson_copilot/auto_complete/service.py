@@ -1,5 +1,4 @@
-from collections.abc import Iterator
-from typing import cast
+from collections.abc import AsyncIterator
 from llama_cpp import (
     ChatCompletionRequestMessage,
     CreateChatCompletionResponse,
@@ -9,48 +8,38 @@ from jetson_copilot.llm.llm_engine import LLMEngine
 from jetson_copilot.llm.schemas import ModelOptions
 
 
-def stream_completion_safe(
-    iterator: Iterator[CreateChatCompletionStreamResponse],
-) -> Iterator[bytes]:
-    for chunk in iterator:
+async def stream_completion_safe(
+    iterator: AsyncIterator[CreateChatCompletionStreamResponse],
+) -> AsyncIterator[bytes]:
+    async for chunk in iterator:
         content = chunk.get("choices", [{}])[0].get("delta", {}).get("content")
         if content:
             yield content.encode("utf-8")
 
 
-def create_completion(
+async def create_completion(
     messages: list[ChatCompletionRequestMessage],
     options: ModelOptions,
     model: str,
     engine: LLMEngine,
 ) -> CreateChatCompletionResponse:
     """Non-streaming chat completion"""
-    return cast(
-        CreateChatCompletionResponse,
-        engine.model.create_chat_completion(
-            messages,
-            temperature=options.temperature,
-            max_tokens=options.num_ctx,
-            stream=False,  # always non-streaming
-            model=model,
-        ),
+    return await engine.create_completion(
+        messages,
+        options,
+        model=model,
     )
 
 
-def create_streamed_completion(
+async def create_streamed_completion(
     messages: list[ChatCompletionRequestMessage],
     options: ModelOptions,
     model: str,
     engine: LLMEngine,
-) -> Iterator[CreateChatCompletionStreamResponse]:
+) -> AsyncIterator[CreateChatCompletionStreamResponse]:
     """Streaming chat completion"""
-    return cast(
-        Iterator[CreateChatCompletionStreamResponse],
-        engine.model.create_chat_completion(
-            messages,
-            temperature=options.temperature,
-            max_tokens=options.num_ctx,
-            stream=True,
-            model=model,
-        ),
+    return engine.stream_chat_completion(
+        messages,
+        options,
+        model=model,
     )
