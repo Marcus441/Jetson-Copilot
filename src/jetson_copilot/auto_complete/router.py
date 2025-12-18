@@ -18,15 +18,26 @@ chat_router = APIRouter()
 
 
 @chat_router.post("/chat")
-def get_chat(request: ChatRequest, engine: Annotated[LLMEngine, Depends(get_engine)]):
+async def get_chat(
+    request: ChatRequest,
+    engine: Annotated[LLMEngine, Depends(get_engine)],
+):
     if request.stream:
-        completion_iterator = create_streamed_completion(
-            request.messages, request.options, request.model, engine
+        stream = await create_streamed_completion(
+            request.messages,
+            request.options,
+            request.model,
+            engine,
         )
+
         return StreamingResponse(
-            stream_completion_safe(completion_iterator), media_type="text/event-stream"
+            stream_completion_safe(stream),
+            media_type="text/event-stream",
         )
     else:
-        return create_completion(
-            request.messages, request.options, request.model, engine
+        return await create_completion(
+            request.messages,
+            request.options,
+            request.model,
+            engine,
         )
